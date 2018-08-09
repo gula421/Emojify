@@ -32,6 +32,8 @@ import timber.log.Timber;
 
 class Emojifier {
     private static final String LOG_TAG = Emojifier.class.getSimpleName();
+    private static final double SMILING_PROB_THRESHOLD = .15;
+    private static final double EYE_OPEN_PROB_THRESHOLD = .5;
 
     static void detectFaces(Context context, Bitmap picture){
         // create Face detector, disable tracking and enable classification
@@ -62,11 +64,53 @@ class Emojifier {
     /**
      * Method for logging the classification probabilities
      *
-     * @param face the face to get the classification probabilities
+     * @param face the face to for which you pick an emoji
      * */
-    private static void getClassifications(Face face){
-        Log.d(LOG_TAG, "getClassifications: similingProb = "+ face.getIsSmilingProbability());
-        Log.d(LOG_TAG, "getClassifications: leftEyeOpenProb ="+face.getIsLeftEyeOpenProbability());
-        Log.d(LOG_TAG, "getClassifications: rightEyeOpenProb = "+ face.getIsRightEyeOpenProbability());
+    private static void whichEmoji(Face face){
+        Log.d(LOG_TAG, "whichEmoji: similingProb = "+ face.getIsSmilingProbability());
+        Log.d(LOG_TAG, "whichEmoji: leftEyeOpenProb ="+face.getIsLeftEyeOpenProbability());
+        Log.d(LOG_TAG, "whichEmoji: rightEyeOpenProb = "+ face.getIsRightEyeOpenProbability());
+
+        // track the state of facial expression
+        boolean smiling = face.getIsSmilingProbability() > SMILING_PROB_THRESHOLD;
+        boolean leftEyeClosed = face.getIsLeftEyeOpenProbability() < EYE_OPEN_PROB_THRESHOLD;
+        boolean rightEyeClosed = face.getIsRightEyeOpenProbability() < EYE_OPEN_PROB_THRESHOLD;
+
+        // determine and log the appropriate emoji
+        Emoji emoji ;
+
+        if (smiling){
+            if (leftEyeClosed && !rightEyeClosed){
+                emoji = Emoji.LEFT_WINK;
+            } else if (rightEyeClosed && ! leftEyeClosed) {
+                emoji = Emoji.RIGHT_WINK;
+            } else if (leftEyeClosed){
+                emoji = Emoji.CLOSED_EYE_SMILE;
+            } else {emoji = Emoji.SMILE;}
+        } else {
+            if (leftEyeClosed && !rightEyeClosed){
+                emoji = Emoji.LEFT_WINK_FROWN;
+            } else if (rightEyeClosed && ! leftEyeClosed) {
+                emoji = Emoji.RIGHT_WINK_FROWN;
+            } else if (leftEyeClosed){
+                emoji = Emoji.CLOSED_EYE_FROWN;
+            } else {emoji = Emoji.FROWN;}
+        }
+
+        // log the chosen Emoji
+        Log.d(LOG_TAG, "whichEmoji: "+ emoji.name());
+
+    }
+
+    // Enum for all possible Emojis
+    private enum Emoji{
+        SMILE,
+        FROWN,
+        LEFT_WINK,
+        RIGHT_WINK,
+        LEFT_WINK_FROWN,
+        RIGHT_WINK_FROWN,
+        CLOSED_EYE_SMILE,
+        CLOSED_EYE_FROWN
     }
 }
