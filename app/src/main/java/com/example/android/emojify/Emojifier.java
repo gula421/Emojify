@@ -58,4 +58,15 @@ class Emojifier {
         detector.release();
 
     }
+
+    /**
+     * Method for logging the classification probabilities
+     *
+     * @param face the face to get the classification probabilities
+     * */
+    private static void getClassifications(Face face){
+        Log.d(LOG_TAG, "getClassifications: similingProb = "+ face.getIsSmilingProbability());
+        Log.d(LOG_TAG, "getClassifications: leftEyeOpenProb ="+face.getIsLeftEyeOpenProbability());
+        Log.d(LOG_TAG, "getClassifications: rightEyeOpenProb = "+ face.getIsRightEyeOpenProbability());
+    }
 }
